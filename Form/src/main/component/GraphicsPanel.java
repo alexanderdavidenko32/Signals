@@ -26,6 +26,13 @@ public class GraphicsPanel extends JPanel {
 
     private List<Float> waveLetValues;
 
+    private List<Double> baseWaveletValues;
+
+    private List<Line> baseWaveletLines;
+
+    private boolean showSignals;
+    private boolean showWavelet;
+
     public GraphicsPanel() {
         maxValue = 0;
         minValue = 0;
@@ -33,6 +40,10 @@ public class GraphicsPanel extends JPanel {
         signalFile = new SignalFile();
         waveletLines = new ArrayList<>();
         waveLetValues = new ArrayList<>();
+        baseWaveletValues = new ArrayList<>();
+        baseWaveletLines = new ArrayList<>();
+        showSignals = true;
+        showWavelet = true;
     }
 
     @Override
@@ -47,14 +58,24 @@ public class GraphicsPanel extends JPanel {
 
         calculateLines();
 
-        for (Line line : lines) {
-            g2d.draw(line);
+        if (showSignals) {
+            for (Line line : lines) {
+                g2d.draw(line);
+            }
         }
 
-        g2d.setColor(Color.PINK);
-        for (Line waveletLine : waveletLines) {
-            g2d.draw(waveletLine);
+        if (showWavelet) {
+            g2d.setColor(Color.PINK);
+            for (Line waveletLine : waveletLines) {
+                g2d.draw(waveletLine);
+            }
         }
+
+        //отрисовка базового вейвлета
+//        g2d.setColor(Color.RED);
+//        for (Line baseWaveletLine : baseWaveletLines) {
+//            g2d.draw(baseWaveletLine);
+//        }
     }
 
     private void drawAxis(Graphics g) {
@@ -121,6 +142,7 @@ public class GraphicsPanel extends JPanel {
         if (signals.size() > 0) {
             this.setLines(new ArrayList<Line>());
             this.setWaveletLines(new ArrayList<Line>());
+            this.setBaseWaveletLines(new ArrayList<Line>());
 
             int scrollBarHeight = 1;
             //исходная высота панели
@@ -155,6 +177,10 @@ public class GraphicsPanel extends JPanel {
 
             for (int i = 0; i < waveLetValues.size() - 2; i++) {
                 waveletLines.add(new Line(i * timeInIteration, (waveLetValues.get(i) * factor) * -1 + xAxis, (i + 1) * timeInIteration, (waveLetValues.get(i + 1) * factor) * -1 + xAxis));
+            }
+
+            for (int i = 0; i < baseWaveletValues.size() - 2; i++) {
+                baseWaveletLines.add(new Line(i * timeInIteration, (baseWaveletValues.get(i) * factor) * -1 + xAxis, (i + 1) * timeInIteration, (baseWaveletValues.get(i + 1) * factor) * -1 + xAxis));
             }
         }
     }
@@ -209,5 +235,37 @@ public class GraphicsPanel extends JPanel {
 
     public void setWaveletLines(List<Line> waveletLines) {
         this.waveletLines = waveletLines;
+    }
+
+    public List<Double> getBaseWaveletValues() {
+        return baseWaveletValues;
+    }
+
+    public void setBaseWaveletValues(List<Double> baseWaveletValues) {
+        this.baseWaveletValues = baseWaveletValues;
+    }
+
+    public List<Line> getBaseWaveletLines() {
+        return baseWaveletLines;
+    }
+
+    public void setBaseWaveletLines(List<Line> baseWaveletLines) {
+        this.baseWaveletLines = baseWaveletLines;
+    }
+
+    public boolean isShowSignals() {
+        return showSignals;
+    }
+
+    public void setShowSignals(boolean showSignals) {
+        this.showSignals = showSignals;
+    }
+
+    public boolean isShowWavelet() {
+        return showWavelet;
+    }
+
+    public void setShowWavelet(boolean showWavelet) {
+        this.showWavelet = showWavelet;
     }
 }

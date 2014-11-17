@@ -40,6 +40,13 @@ public class MainForm extends JFrame {
     private JPanel buttonGroupPanel = new JPanel();
     private ButtonGroup buttonGroup = new ButtonGroup();
 
+    /**
+     * частота для которой определяется вейвлет
+     * нужна для рассчета ширины вейвлета
+     * (например 50 Гц)
+     */
+    private int Fw = 50;
+
     public MainForm() {
         super();
 
@@ -70,41 +77,73 @@ public class MainForm extends JFrame {
         JRadioButton jRadioButtonMorlet = new JRadioButton("morlet");
         JRadioButton jRadioButtonGaus3P = new JRadioButton("gaus3");
         JRadioButton jRadioButtonGaus4P = new JRadioButton("gaus4");
+        final JCheckBox jCheckboxShowSourceSignal = new JCheckBox("Source Signal");
+        final JCheckBox jCheckboxShowTransformedSignal = new JCheckBox("Transformed Signal");
+
         buttonGroup.add(jRadioButtonHat);
         buttonGroup.add(jRadioButtonMorlet);
         buttonGroup.add(jRadioButtonGaus3P);
         buttonGroup.add(jRadioButtonGaus4P);
         buttonGroupPanel.add(jRadioButtonHat);
         buttonGroupPanel.add(jRadioButtonMorlet);
-//        buttonGroupPanel.add(jRadioButtonGaus3P);
+        buttonGroupPanel.add(jRadioButtonGaus3P);
         buttonGroupPanel.add(jRadioButtonGaus4P);
+        buttonGroupPanel.add(jCheckboxShowSourceSignal);
+        buttonGroupPanel.add(jCheckboxShowTransformedSignal);
         rootPanel.add(buttonGroupPanel, BorderLayout.NORTH);
+
+        jCheckboxShowSourceSignal.setSelected(true);
+        jCheckboxShowTransformedSignal.setSelected(true);
 
         jRadioButtonHat.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                calculateWavelet(new MexicanHatWavelet());
+                calculateWavelet(new MexicanHatWavelet( signalFile.getPointsCountAtTheSameTime(), Fw ));
             }
         });
 
         jRadioButtonMorlet.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                calculateWavelet(new MorletWavelet());
+                calculateWavelet(new MorletWavelet( signalFile.getPointsCountAtTheSameTime(), Fw ));
             }
         });
 
         jRadioButtonGaus3P.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                calculateWavelet(new Gaus3PWavelet());
+                calculateWavelet(new Gaus3PWavelet( signalFile.getPointsCountAtTheSameTime(), Fw ));
             }
         });
 
         jRadioButtonGaus4P.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                calculateWavelet(new Gaus4PWavelet());
+                calculateWavelet(new Gaus4PWavelet( signalFile.getPointsCountAtTheSameTime(), Fw ));
+            }
+        });
+
+        jCheckboxShowSourceSignal.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (jCheckboxShowSourceSignal.isSelected()) {
+                    graphicsPanel.setShowSignals(true);
+                } else {
+                    graphicsPanel.setShowSignals(false);
+                }
+                graphicsPanel.repaint();
+            }
+        });
+
+        jCheckboxShowTransformedSignal.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (jCheckboxShowTransformedSignal.isSelected()) {
+                    graphicsPanel.setShowWavelet(true);
+                } else {
+                    graphicsPanel.setShowWavelet(false);
+                }
+                graphicsPanel.repaint();
             }
         });
 
@@ -206,7 +245,7 @@ public class MainForm extends JFrame {
         float maxValue = signalFile.getMaxValue();
 
         ArrayList<Float> values = new ArrayList<>();
-        for (int m = 0; m < 1000; m++) {
+        for (int m = 0; m < signalFile.getDataSize() - 1; m++) {
             double value = waveletTransform.calculateTransform(m, signalFile.getSignals());
             if (value < minValue) {
                 minValue = (float)value;
@@ -217,6 +256,7 @@ public class MainForm extends JFrame {
 
             values.add((float)value);
         }
+        graphicsPanel.setBaseWaveletValues(wavelet.getValues());
         graphicsPanel.setMaxValue(maxValue);
         graphicsPanel.setMinValue(minValue);
         graphicsPanel.setWaveLetValues(values);
@@ -230,10 +270,12 @@ public class MainForm extends JFrame {
         JMenu menuFile = new JMenu("File");
 
         JMenuItem itemOpen = new JMenuItem("Open");
+        JMenuItem itemСhangeWaveletFrequency = new JMenuItem("change Wavelet frequency");
         JCheckBoxMenuItem itemAdditionalPanel = new JCheckBoxMenuItem("Show spectrum");
         JMenuItem itemInfo = new JMenuItem("file info");
 
         menuFile.add(itemOpen);
+        menuFile.add(itemСhangeWaveletFrequency);
         menuFile.add(itemAdditionalPanel);
         menuFile.add(itemInfo);
 
@@ -259,6 +301,8 @@ public class MainForm extends JFrame {
                     graphicsPanel.setLines(new ArrayList<Line>());
                     graphicsPanel.setWaveletLines(new ArrayList<Line>());
                     graphicsPanel.setWaveLetValues(new ArrayList<Float>());
+                    graphicsPanel.setBaseWaveletValues(new ArrayList<Double>());
+                    graphicsPanel.setBaseWaveletLines(new ArrayList<Line>());
 
                     renderSignal();
                     buttonGroupPanel.setVisible(true);
@@ -273,6 +317,18 @@ public class MainForm extends JFrame {
                 } catch (NullPointerException | IOException ex) {
                     ex.printStackTrace();
                 }
+            }
+        });
+
+        itemСhangeWaveletFrequency.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String frequency = JOptionPane.showInputDialog("Введите частоту", Fw);
+
+                if (frequency != null) {
+                    Fw = Integer.parseInt(frequency);
+                }
+
             }
         });
 

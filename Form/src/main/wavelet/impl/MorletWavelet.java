@@ -6,7 +6,13 @@ import main.wavelet.Wavelet;
  * Created by chrno on 11/2/14.
  */
 public class MorletWavelet extends Wavelet {
-    private double scale = .6;
+    public MorletWavelet(int fd, int fw) {
+        super(fd, fw);
+        calculateWaveletValues();
+    }
+
+    private double k = 8;
+
 
     @Override
     public double calculate(double t) {
@@ -14,7 +20,7 @@ public class MorletWavelet extends Wavelet {
     }
 
     @Override
-    public double getScale() {
-        return scale;
+    public double getK() {
+        return k;
     }
 }

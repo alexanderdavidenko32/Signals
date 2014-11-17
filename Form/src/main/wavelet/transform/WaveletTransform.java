@@ -17,21 +17,18 @@ public class WaveletTransform {
         this.wavelet = wavelet;
     }
 
-    public double calculateTransform(double tau, ArrayList<Float> signalValues) {
+    public double calculateTransform(int startIndex, ArrayList<Float> signalValues) {
         double sum = 0;
-        double scale =  wavelet.getScale();
-        double sqrtScale = 1./Math.sqrt(scale);
-//        double sqrtScale = 1./scale;
+        ArrayList<Double> waveletValues = wavelet.getValues();
 
-        for (int t = 0; t < 1000; t++) {
-//            double argument = (8. * ((double)n - m) - 4. * Nmhat) / Nmhat;
-            double argument = (t - tau) / scale;
+        for (int t = 0; t < wavelet.getWidth(); t++) {
 
-            double waveletResult = wavelet.calculate(argument);
-
-            sum += (double)signalValues.get(t) * waveletResult;
+            if (startIndex + t + 1 > signalValues.size()) {
+                return sum;
+            }
+            sum += (double)signalValues.get(startIndex + t) * waveletValues.get(t);
         }
 
-        return  sqrtScale * sum;
+        return sum;
     }
 }

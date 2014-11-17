@@ -5,5 +5,4 @@ package main.wavelet;
  */
 public interface IWavelet {
     public double calculate(double t);
-    public double getScale();
 }

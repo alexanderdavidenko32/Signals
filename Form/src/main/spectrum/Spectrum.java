@@ -38,6 +38,7 @@ public class Spectrum {
             aSin.add(result);
         }
     }
+
     private void calculateACos() {
         aCos = new ArrayList<>();
         for (int j = 0; j < spectrumSize; j++) {
