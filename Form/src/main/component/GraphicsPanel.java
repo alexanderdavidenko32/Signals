@@ -29,7 +29,7 @@ public class GraphicsPanel extends JPanel {
     public GraphicsPanel() {
         maxValue = 0;
         minValue = 0;
-        lines = new ArrayList<Line>();
+        lines = new ArrayList<>();
         signalFile = new SignalFile();
         waveletLines = new ArrayList<>();
         waveLetValues = new ArrayList<>();
@@ -47,13 +47,8 @@ public class GraphicsPanel extends JPanel {
 
         calculateLines();
 
-        int i = 0;
         for (Line line : lines) {
             g2d.draw(line);
-            if (i > 816) {
-                g2d.setColor(Color.RED);
-            }
-            i++;
         }
 
         g2d.setColor(Color.PINK);
@@ -84,7 +79,7 @@ public class GraphicsPanel extends JPanel {
 
             ArrayList<AxisLine> axisLines = new ArrayList<>();
 
-            AxisLine xLine = new AxisLine(0, xAxis, width, xAxis, "0", new Point(0, xAxis));
+            AxisLine xLine = new AxisLine(0, xAxis, width, xAxis, "0", new Point(0, (double)xAxis));
             axisLines.add(xLine);
 
             float aboveXMaxValueSegment = Math.abs(getMaxValue()) / 3;
@@ -146,7 +141,6 @@ public class GraphicsPanel extends JPanel {
 //            float factor = 1;
 
             float xAxis = getMaxValue() * factor;
-            int yAxis = 0;
 
             /**
              * на -1 умножаем для того, чтобы инвертировать значение по y. иначе у нас будет получаться график наоборот.

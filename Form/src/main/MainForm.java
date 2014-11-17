@@ -4,6 +4,7 @@ import main.component.GraphicsPanel;
 import main.file.SignalFile;
 import main.file.reader.BufferFileReader;
 import main.geometry.Line;
+import main.spectrum.Spectrum;
 import main.wavelet.*;
 import main.wavelet.impl.Gaus3PWavelet;
 import main.wavelet.impl.Gaus4PWavelet;
@@ -31,8 +32,10 @@ public class MainForm extends JFrame {
             JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 
     private GraphicsPanel graphicsPanel = new GraphicsPanel();
-    private GraphicsPanel graphicsPanel1;//панель для доп графика
+    private GraphicsPanel spectrumPanel = new GraphicsPanel();//панель для Спектра
     private SignalFile signalFile = new SignalFile();
+    private Spectrum spectrum;
+    private ArrayList<Float> spectrumResults = new ArrayList<>();
 
     private JPanel buttonGroupPanel = new JPanel();
     private ButtonGroup buttonGroup = new ButtonGroup();
@@ -42,7 +45,7 @@ public class MainForm extends JFrame {
 
 //        setSize(400, 400);
         setContentPane(rootPanel);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 //        setLocationRelativeTo(null);
         setLayout(new BorderLayout());
         pack();
@@ -128,17 +131,41 @@ public class MainForm extends JFrame {
         if (centerPanel.getComponentCount() == 1) {
             centerPanel.setLayout(new GridLayout(2, 1));
 
-            graphicsPanel1 = new GraphicsPanel();
-
-            graphicsPanel1.setBackground(Color.BLACK);
-            additionalScrollPane.setViewportView(graphicsPanel1);
+            spectrumPanel.setBackground(Color.BLACK);
+            spectrumPanel.setPreferredSize(new Dimension(500, 160));
+            additionalScrollPane.setViewportView(spectrumPanel);
 
             centerPanel.add(additionalScrollPane);
             centerPanel.revalidate();
+            renderSpectrum();
         } else {
             centerPanel.remove(additionalScrollPane);
             centerPanel.setLayout(new GridLayout(1, 1));
             centerPanel.revalidate();
+        }
+    }
+
+    private void renderSpectrum() {
+        if (spectrumResults.size() > 0 && spectrumPanel.isVisible()) {
+            ArrayList<Line> spectrumLines = new ArrayList<>();
+
+            float newPanelHeight = Math.abs(spectrum.getMaxValue()) + Math.abs(spectrum.getMinValue());
+            int scrollBarHeight = 1;
+            int initialPanelHeight = (int)spectrumPanel.getPreferredSize().getHeight();
+
+            float factor = (initialPanelHeight - scrollBarHeight) / newPanelHeight;
+            float xAxis = spectrum.getMaxValue() * factor;
+
+            for (int i = 0; i < spectrumResults.size() - 1; i++) {
+                spectrumLines.add(new Line(i, xAxis, i, (spectrumResults.get(i) * factor) * -1 + xAxis));
+            }
+
+            spectrumPanel.setLines(spectrumLines);
+
+            spectrumPanel.setMaxValue(spectrum.getMaxValue());
+            spectrumPanel.setMinValue(spectrum.getMinValue());
+
+            spectrumPanel.repaint();
         }
     }
 
@@ -190,22 +217,6 @@ public class MainForm extends JFrame {
 
             values.add((float)value);
         }
-//        double[] csignals = new double[1000];
-//        for (int i = 0; i < 1000; i++) {
-//            csignals[i] = (double)signalFile.getSignals().get(i);
-//        }
-//
-////        CWT cwt = new CWT(2, 1, 1.816);
-//        CWT cwt = new CWT(2, 1, 2);
-//
-//        Complex[] res = cwt.complexTransform(csignals);
-//
-//        ArrayList<Float> values = new ArrayList<>();
-//        for (int m = 0; m < 1000; m++) {
-//
-//            values.add((float)res[m].real());
-////            System.out.println(value);
-//        }
         graphicsPanel.setMaxValue(maxValue);
         graphicsPanel.setMinValue(minValue);
         graphicsPanel.setWaveLetValues(values);
@@ -219,11 +230,11 @@ public class MainForm extends JFrame {
         JMenu menuFile = new JMenu("File");
 
         JMenuItem itemOpen = new JMenuItem("Open");
-        JCheckBoxMenuItem itemAdditionalPanel = new JCheckBoxMenuItem("Show Additional Panel");
+        JCheckBoxMenuItem itemAdditionalPanel = new JCheckBoxMenuItem("Show spectrum");
         JMenuItem itemInfo = new JMenuItem("file info");
 
         menuFile.add(itemOpen);
-//        menuFile.add(itemAdditionalPanel);
+        menuFile.add(itemAdditionalPanel);
         menuFile.add(itemInfo);
 
         menuBar.add(menuFile);
@@ -242,18 +253,7 @@ public class MainForm extends JFrame {
 //                    System.out.print(file.getPath());
                     signalFile = BufferFileReader.readFile(file);
 
-                    System.out.println(signalFile.getSignature());
-                    System.out.println(signalFile.getChannelsCount());
-                    System.out.println(signalFile.getPointsCountAtTheSameTime());
-                    System.out.println(signalFile.getSpectralLinesCount());
-                    System.out.println(signalFile.getCutOffFrequency());
-                    System.out.println(signalFile.getFrequencyResolution());
-                    System.out.println(signalFile.getTimeToReceive());
-                    System.out.println(signalFile.getUserBlocksCount());
-                    System.out.println(signalFile.getDataSize());
-                    System.out.println(signalFile.getSystemBlocksCount());
-                    System.out.println(signalFile.getMaxValue());
-                    System.out.println(signalFile.getMinValue());
+                    System.out.println(signalFile.toString());
 
                     // чистим лайны
                     graphicsPanel.setLines(new ArrayList<Line>());
@@ -263,6 +263,13 @@ public class MainForm extends JFrame {
                     renderSignal();
                     buttonGroupPanel.setVisible(true);
                     buttonGroup.clearSelection();
+
+                    // Спектр
+                    spectrum = new Spectrum(signalFile.getSignals());
+                    spectrumResults = spectrum.calculateSpectrum();
+
+                    renderSpectrum();
+
                 } catch (NullPointerException | IOException ex) {
                     ex.printStackTrace();
                 }
